@@ -36,6 +36,9 @@ async def music(ctx, repeat: bool = False, i: int = None):
     directory = os.listdir('audio/' + str(ctx.guild.id) + '/saved')
     audio = [file for file in directory if not file.endswith('.info')]
     if not connected_to_voice:
+        if not ctx.author.voice:
+            await ctx.send('join voice channel to play')
+            return
         vc = await ctx.author.voice.channel.connect()
         connected_to_voice = True
         if i is not None and abs(i) < len(audio):
@@ -86,6 +89,9 @@ async def play(ctx, url: str):
                 os.remove('audio/' + str(ctx.guild.id) + '/song.mp3')
         except PermissionError:
             await ctx.send("stop currently playing(§stop) to play new song")
+        if not ctx.author.voice:
+            await ctx.send('join voice channel to play')
+            return
         vc = await ctx.author.voice.channel.connect()
         connected_to_voice = True
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
