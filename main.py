@@ -10,7 +10,7 @@ import yt_dlp
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
-bot = commands.Bot(command_prefix='§')
+bot = commands.Bot(command_prefix='§', intents=discord.Intents.all())
 
 
 @bot.event
@@ -23,6 +23,23 @@ async def on_ready():
         if not os.path.exists('audio/' + str(guild.id)):
             os.mkdir('audio/' + str(guild.id))
             open(f'audio/{str(guild.id)}/{guild.name}.info', "a").close()
+
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    if str(message.author) == "mackish":
+        await message.add_reaction("🇬")
+        await message.add_reaction("🇦")
+        await message.add_reaction("🇾")
+    if 'ajojo' in message.content.lower():
+        path = 'audio/' + str(message.guild.id) + '/memes/ajojo.jpg'
+        await message.channel.send(file=discord.File(path))
+    if 'marcus' in message.content.lower() or 'majcus' in message.content.lower():
+        path = 'audio/' + str(message.guild.id) + '/memes/majcus.jpg'
+        await message.channel.send(file=discord.File(path))
+    await bot.process_commands(message)
 
 
 connected_to_voice = False
@@ -92,13 +109,13 @@ async def play(ctx, url: str):
         if not ctx.author.voice:
             await ctx.send('join voice channel to play')
             return
-        vc = await ctx.author.voice.channel.connect()
-        connected_to_voice = True
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         for file in os.listdir('./'):
             if file.endswith('.mp3'):
                 os.rename(file, 'audio/' + str(ctx.guild.id) + '/song.mp3')
+        vc = await ctx.author.voice.channel.connect()
+        connected_to_voice = True
         try:
             vc.play(discord.FFmpegPCMAudio(f'audio/{str(ctx.guild.id)}/' + 'song.mp3'))
             while vc.is_playing() and not stopped:
